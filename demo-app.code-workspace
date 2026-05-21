@@ -1,0 +1,19 @@
+{
+    "folders": [
+        {
+            "name": "FlutterSecureAuth — App",
+            "path": "app/flutter_login_registration"
+        },
+        {
+            "name": "FlutterSecureAuth — Backend",
+            "path": "backend"
+        },
+        {
+            "name": "Root",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "dart.projectSearchDepth": 5
+    }
+}

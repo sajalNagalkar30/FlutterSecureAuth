@@ -1,0 +1,100 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        // ─── Backend ────────────────────────────────────────────────────────
+        {
+            "name": "Start Backend",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/server.js",
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.env",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "restart": true
+        },
+
+        // ─── Flutter – iOS Physical Device ───────────────────────────────
+        {
+            "name": "Flutter (iOS Physical Device)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/app/flutter_login_registration",
+            "args": ["--dart-define=BASE_URL=https://10.45.44.173:9000/api/auth"]
+        },
+
+        // ─── Flutter – iOS Simulator ─────────────────────────────────────
+        {
+            "name": "Flutter (iOS Simulator)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/app/flutter_login_registration",
+            "deviceId": "iphone",
+            "args": ["--dart-define=BASE_URL=https://localhost:9000/api/auth"]
+        },
+
+        // ─── Flutter – Android Emulator ──────────────────────────────────
+        {
+            "name": "Flutter (Android Emulator)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/app/flutter_login_registration",
+            "deviceId": "emulator",
+            "args": ["--dart-define=BASE_URL=https://10.0.2.2:9000/api/auth"]
+        },
+
+        // ─── Flutter – Android Physical Device ──────────────────────────
+        {
+            "name": "Flutter (Android Physical Device)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/app/flutter_login_registration",
+            "args": ["--dart-define=BASE_URL=https://10.45.44.173:9000/api/auth"]
+        },
+
+        // ─── Flutter – macOS Desktop ─────────────────────────────────────
+        {
+            "name": "Flutter (macOS)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/app/flutter_login_registration",
+            "deviceId": "macos",
+            "args": ["--dart-define=BASE_URL=https://localhost:9000/api/auth"]
+        }
+    ],
+
+    // ─── Compounds: start backend + Flutter together ─────────────────────
+    "compounds": [
+        {
+            "name": "▶  Backend + iOS Physical Device",
+            "configurations": ["Start Backend", "Flutter (iOS Physical Device)"],
+            "stopAll": true,
+            "presentation": { "order": 1 }
+        },
+        {
+            "name": "▶  Backend + iOS Simulator",
+            "configurations": ["Start Backend", "Flutter (iOS Simulator)"],
+            "stopAll": true,
+            "presentation": { "order": 2 }
+        },
+        {
+            "name": "▶  Backend + Android Emulator",
+            "configurations": ["Start Backend", "Flutter (Android Emulator)"],
+            "stopAll": true,
+            "presentation": { "order": 3 }
+        },
+        {
+            "name": "▶  Backend + Android Physical Device",
+            "configurations": ["Start Backend", "Flutter (Android Physical Device)"],
+            "stopAll": true,
+            "presentation": { "order": 4 }
+        },
+        {
+            "name": "▶  Backend + macOS",
+            "configurations": ["Start Backend", "Flutter (macOS)"],
+            "stopAll": true,
+            "presentation": { "order": 5 }
+        }
+    ]
+}

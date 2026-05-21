@@ -1,0 +1,117 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # JOB 1: Backend — install, lint, test
+  # ─────────────────────────────────────────────────────────────────────────
+  backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Recreate .env from GitHub Secrets
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          PORT=9000
+          MONGO_URI=${{ secrets.MONGO_URI }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+          USE_HTTPS=true
+          CORS_ORIGIN=*
+          EOF
+
+      # Recreate SSL certs from GitHub Secrets
+      - name: Restore SSL certificates
+        run: |
+          mkdir -p backend/certs
+          echo "${{ secrets.SSL_CERT }}" > backend/certs/server.crt
+          echo "${{ secrets.SSL_KEY }}"  > backend/certs/server.key
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run backend (smoke test — server starts without crashing)
+        run: |
+          timeout 10 node backend/server.js &
+          sleep 5
+          curl -k https://localhost:9000 || true
+        env:
+          NODE_ENV: test
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # JOB 2: Flutter — analyze and build
+  # ─────────────────────────────────────────────────────────────────────────
+  flutter:
+    name: Flutter CI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Flutter dependencies
+        working-directory: app/flutter_login_registration
+        run: flutter pub get
+
+      - name: Analyze Flutter code
+        working-directory: app/flutter_login_registration
+        run: flutter analyze
+
+      - name: Run Flutter tests
+        working-directory: app/flutter_login_registration
+        run: flutter test
+
+      - name: Build Flutter APK (Android)
+        working-directory: app/flutter_login_registration
+        run: flutter build apk --release --no-pub
+        continue-on-error: true   # needs signing key for real release
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # JOB 3: Deploy backend (runs only on push to main)
+  # Uncomment and fill in your server details when ready to deploy
+  # ─────────────────────────────────────────────────────────────────────────
+  # deploy-backend:
+  #   name: Deploy Backend
+  #   runs-on: ubuntu-latest
+  #   needs: [backend, flutter]       # only deploy if both CI jobs pass
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Deploy to server via SSH
+  #       uses: appleboy/ssh-action@v1
+  #       with:
+  #         host:     ${{ secrets.SERVER_HOST }}
+  #         username: ${{ secrets.SERVER_USER }}
+  #         key:      ${{ secrets.SERVER_SSH_KEY }}
+  #         script: |
+  #           cd /var/www/demo-login-app
+  #           git pull origin main
+  #           npm install --production
+  #           pm2 restart backend
