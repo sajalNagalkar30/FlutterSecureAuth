@@ -56,10 +56,10 @@ jobs:
           NODE_ENV: test
 
   # ─────────────────────────────────────────────────────────────────────────
-  # JOB 2: Flutter — analyze and build
+  # JOB 2: Flutter CI — analyze + test (ubuntu, fast)
   # ─────────────────────────────────────────────────────────────────────────
-  flutter:
-    name: Flutter CI
+  flutter-check:
+    name: Flutter Analyze & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -73,42 +73,95 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Install Flutter dependencies
+      - name: Install dependencies
         working-directory: app/flutter_login_registration
         run: flutter pub get
 
-      - name: Analyze Flutter code
+      - name: Analyze code
         working-directory: app/flutter_login_registration
         run: flutter analyze
 
-      - name: Run Flutter tests
+      - name: Run tests
         working-directory: app/flutter_login_registration
         run: flutter test
 
-      - name: Build Flutter APK (Android)
+  # ─────────────────────────────────────────────────────────────────────────
+  # JOB 3: Build Android APK
+  # ─────────────────────────────────────────────────────────────────────────
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    needs: flutter-check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        working-directory: app/flutter_login_registration
+        run: flutter pub get
+
+      - name: Build APK
         working-directory: app/flutter_login_registration
         run: flutter build apk --release --no-pub
 
-      # ── Upload APK so it can be downloaded from GitHub Actions ──────────
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FlutterSecureAuth-APK
           path: app/flutter_login_registration/build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 30   # artifact stays available for 30 days
+          retention-days: 30
 
-      # ── Build iOS IPA (macOS runner required) ────────────────────────────
-      # Uncomment when you want iOS builds (uses paid minutes)
-      # - name: Build iOS IPA
-      #   working-directory: app/flutter_login_registration
-      #   run: flutter build ipa --release --no-pub --no-codesign
+  # ─────────────────────────────────────────────────────────────────────────
+  # JOB 4: Build iOS IPA (requires macOS runner)
+  # ─────────────────────────────────────────────────────────────────────────
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    needs: flutter-check
 
-      # - name: Upload IPA artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: FlutterSecureAuth-IPA
-      #     path: app/flutter_login_registration/build/ios/ipa/*.ipa
-      #     retention-days: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        working-directory: app/flutter_login_registration
+        run: flutter pub get
+
+      - name: Install CocoaPods
+        working-directory: app/flutter_login_registration/ios
+        run: pod install
+
+      - name: Build IPA (no code sign)
+        working-directory: app/flutter_login_registration
+        run: flutter build ipa --release --no-pub --no-codesign
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlutterSecureAuth-IPA
+          path: app/flutter_login_registration/build/ios/ipa/*.ipa
+          retention-days: 30
 
   # ─────────────────────────────────────────────────────────────────────────
   # JOB 3: Deploy backend (runs only on push to main)
