@@ -131,12 +131,14 @@ jobs:
 
       # ── Code Obfuscation: --obfuscate hides class/method names ─────────
       # ── split-debug-info stores symbols separately (not in APK) ─────────
+      # ── SERVER_URL secret injects the real backend URL into the APK ─────
       - name: Build APK (obfuscated)
         working-directory: app/flutter_login_registration
         run: |
           flutter build apk --release --no-pub \
             --obfuscate \
-            --split-debug-info=build/debug-info/android
+            --split-debug-info=build/debug-info/android \
+            --dart-define=BASE_URL=${{ secrets.SERVER_URL }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -186,7 +188,8 @@ jobs:
         run: |
           flutter build ipa --release --no-pub --no-codesign \
             --obfuscate \
-            --split-debug-info=build/debug-info/ios
+            --split-debug-info=build/debug-info/ios \
+            --dart-define=BASE_URL=${{ secrets.SERVER_URL }}
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
