@@ -6,10 +6,14 @@ on:
   pull_request:
     branches: [main]
 
+# ── CI/CD Security: restrict default permissions ─────────────────────────────
+permissions:
+  contents: read
+
 jobs:
 
   # ─────────────────────────────────────────────────────────────────────────
-  # JOB 1: Backend — install, lint, test
+  # JOB 1: Backend — install, audit, test
   # ─────────────────────────────────────────────────────────────────────────
   backend:
     name: Backend CI
@@ -46,6 +50,11 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      # ── Build & CI/CD Security: audit dependencies for vulnerabilities ──
+      - name: Audit Node dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
 
       - name: Run backend (smoke test — server starts without crashing)
         run: |
@@ -85,6 +94,12 @@ jobs:
         working-directory: app/flutter_login_registration
         run: flutter test
 
+      # ── Build & CI/CD Security: check for outdated/vulnerable packages ──
+      - name: Check outdated Flutter packages
+        working-directory: app/flutter_login_registration
+        run: flutter pub outdated
+        continue-on-error: true
+
   # ─────────────────────────────────────────────────────────────────────────
   # JOB 3: Build Android APK
   # ─────────────────────────────────────────────────────────────────────────
@@ -114,15 +129,28 @@ jobs:
         working-directory: app/flutter_login_registration
         run: flutter pub get
 
-      - name: Build APK
+      # ── Code Obfuscation: --obfuscate hides class/method names ─────────
+      # ── split-debug-info stores symbols separately (not in APK) ─────────
+      - name: Build APK (obfuscated)
         working-directory: app/flutter_login_registration
-        run: flutter build apk --release --no-pub
+        run: |
+          flutter build apk --release --no-pub \
+            --obfuscate \
+            --split-debug-info=build/debug-info/android
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FlutterSecureAuth-APK
           path: app/flutter_login_registration/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      # ── Upload debug symbols separately (for crash reports) ─────────────
+      - name: Upload Android debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-DebugSymbols
+          path: app/flutter_login_registration/build/debug-info/android
           retention-days: 30
 
   # ─────────────────────────────────────────────────────────────────────────
@@ -152,15 +180,27 @@ jobs:
         working-directory: app/flutter_login_registration/ios
         run: pod install
 
-      - name: Build IPA (no code sign)
+      # ── Code Obfuscation: same flags for iOS ────────────────────────────
+      - name: Build IPA (obfuscated, no code sign)
         working-directory: app/flutter_login_registration
-        run: flutter build ipa --release --no-pub --no-codesign
+        run: |
+          flutter build ipa --release --no-pub --no-codesign \
+            --obfuscate \
+            --split-debug-info=build/debug-info/ios
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: FlutterSecureAuth-IPA
           path: app/flutter_login_registration/build/ios/ipa/*.ipa
+          retention-days: 30
+
+      # ── Upload iOS debug symbols separately ──────────────────────────────
+      - name: Upload iOS debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: iOS-DebugSymbols
+          path: app/flutter_login_registration/build/debug-info/ios
           retention-days: 30
 
   # ─────────────────────────────────────────────────────────────────────────
