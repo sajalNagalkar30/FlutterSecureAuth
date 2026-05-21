@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 
     <application
-        android:label="flutter_login_registration"
+        android:label="FlutterSecureAuth"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
