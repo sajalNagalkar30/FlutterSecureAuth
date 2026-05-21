@@ -21,7 +21,7 @@
             "type": "dart",
             "request": "launch",
             "cwd": "${workspaceFolder}/app/flutter_login_registration",
-            "args": ["--dart-define=BASE_URL=https://fluttersecureauth.onrender.com/api/auth"]
+            "args": ["--dart-define=BASE_URL=https://fluttersecureauth.onrender.com/api/auth/"]
         },
 
         // ─── Flutter – iOS Physical Device (local backend) ───────────────────
@@ -30,7 +30,7 @@
             "type": "dart",
             "request": "launch",
             "cwd": "${workspaceFolder}/app/flutter_login_registration",
-            "args": ["--dart-define=BASE_URL=https://10.45.44.173:9000/api/auth"]
+            "args": ["--dart-define=BASE_URL=https://10.45.44.173:9000/api/auth/"]
         },
 
         // ─── Flutter – iOS Simulator (local backend) ─────────────────────────
@@ -40,7 +40,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/app/flutter_login_registration",
             "deviceId": "iphone",
-            "args": ["--dart-define=BASE_URL=https://localhost:9000/api/auth"]
+            "args": ["--dart-define=BASE_URL=https://localhost:9000/api/auth/"]
         },
 
         // ─── Flutter – Android Emulator (local backend) ──────────────────────
@@ -50,7 +50,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/app/flutter_login_registration",
             "deviceId": "emulator",
-            "args": ["--dart-define=BASE_URL=https://10.0.2.2:9000/api/auth"]
+            "args": ["--dart-define=BASE_URL=https://10.0.2.2:9000/api/auth/"]
         },
 
         // ─── Flutter – Android Physical Device (local backend) ───────────────
@@ -59,7 +59,7 @@
             "type": "dart",
             "request": "launch",
             "cwd": "${workspaceFolder}/app/flutter_login_registration",
-            "args": ["--dart-define=BASE_URL=https://10.45.44.173:9000/api/auth"]
+            "args": ["--dart-define=BASE_URL=https://10.45.44.173:9000/api/auth/"]
         },
 
         // ─── Flutter – Web Chrome (Render backend) ───────────────────────────
@@ -69,7 +69,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/app/flutter_login_registration",
             "deviceId": "chrome",
-            "args": ["--dart-define=BASE_URL=https://fluttersecureauth.onrender.com/api/auth"]
+            "args": ["--dart-define=BASE_URL=https://fluttersecureauth.onrender.com/api/auth/"]
         }
     ],
 

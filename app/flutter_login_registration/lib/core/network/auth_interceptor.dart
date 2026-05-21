@@ -50,7 +50,7 @@ class AuthInterceptor extends Interceptor {
 
     try {
       final response = await _dio.post(
-        '/refresh-token',
+        'refresh-token',
         data: {'refreshToken': refreshToken},
         options: Options(headers: {}), // no Authorization header for this call
       );

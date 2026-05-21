@@ -13,7 +13,7 @@ class ApiConstants {
   static const String baseUrl = String.fromEnvironment(
     'BASE_URL',
     // backend routes are mounted at: /api/auth
-    defaultValue: 'https://fluttersecureauth.onrender.com/api/auth',
+    defaultValue: 'https://fluttersecureauth.onrender.com/api/auth/',
   );
 
   // SSL Pinning — SHA-256 of public key (SPKI) from fluttersecureauth.onrender.com

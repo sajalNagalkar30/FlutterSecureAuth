@@ -16,7 +16,7 @@ class AuthRemoteDatasource {
     await _checkConnectivity();
     try {
       final response = await _dio.post(
-        '/login',
+        'login',
         data: {'email': email, 'password': password},
       );
       return AuthResponseModel.fromJson(response.data as Map<String, dynamic>);
@@ -33,7 +33,7 @@ class AuthRemoteDatasource {
     await _checkConnectivity();
     try {
       final response = await _dio.post(
-        '/register',
+        'register',
         data: {'username': username, 'email': email, 'password': password},
       );
       return AuthResponseModel.fromJson(response.data as Map<String, dynamic>);
@@ -46,7 +46,7 @@ class AuthRemoteDatasource {
     await _checkConnectivity();
     try {
       await _dio.post(
-        '/logout',
+        'logout',
         options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
       );
     } on DioException catch (e) {

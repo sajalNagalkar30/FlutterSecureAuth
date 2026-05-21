@@ -43,7 +43,7 @@ jobs:
         working-directory: app/flutter_login_registration
         run: |
           flutter build web --release \
-            --dart-define=BASE_URL=${{ secrets.SERVER_URL }} \
+            --dart-define=BASE_URL=${{ secrets.SERVER_URL }}/ \
             --base-href /FlutterSecureAuth/
 
       - name: Upload Pages artifact
