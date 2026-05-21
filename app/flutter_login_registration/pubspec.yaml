@@ -27,8 +27,8 @@ dependencies:
   # Dependency injection
   get_it: ^8.0.2
 
-  # Root / Jailbreak detection
-  safe_device: ^1.1.4
+  # No third-party package needed — jailbreak/root detection
+  # is implemented natively in core/security/device_security.dart using dart:io
 
 dependency_overrides:
   path_provider_android: 2.2.12
