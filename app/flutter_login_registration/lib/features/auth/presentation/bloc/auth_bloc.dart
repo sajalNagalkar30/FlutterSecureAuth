@@ -61,9 +61,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _persistUser(user);
       emit(AuthAuthenticated(user));
     } on AppFailure catch (f) {
-      emit(AuthError(f.message));
+      emit(AuthError(f.message, failure: f));
     } catch (_) {
-      emit(const AuthError('An unexpected error occurred.'));
+      emit(const AuthError('Something went wrong. Please try again.'));
     }
   }
 
@@ -82,9 +82,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _persistUser(user);
       emit(AuthAuthenticated(user));
     } on AppFailure catch (f) {
-      emit(AuthError(f.message));
+      emit(AuthError(f.message, failure: f));
     } catch (_) {
-      emit(const AuthError('An unexpected error occurred.'));
+      emit(const AuthError('Something went wrong. Please try again.'));
     }
   }
 

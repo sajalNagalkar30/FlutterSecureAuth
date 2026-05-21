@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/error/failures.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -73,7 +74,7 @@ class _LoginViewState extends State<_LoginView>
             MaterialPageRoute(builder: (_) => HomeScreen(user: state.user)),
           );
         } else if (state is AuthError) {
-          _showErrorSnackBar(context, state.message);
+          _showErrorSnackBar(context, state.message, state.failure);
         }
       },
       child: Scaffold(
@@ -223,21 +224,33 @@ class _LoginViewState extends State<_LoginView>
     );
   }
 
-  void _showErrorSnackBar(BuildContext context, String message) {
+  void _showErrorSnackBar(BuildContext context, String message,
+      [AppFailure? failure]) {
+    final icon = switch (failure) {
+      NetworkFailure() => Icons.wifi_off_rounded,
+      ServerUnreachableFailure() => Icons.cloud_off_rounded,
+      TimeoutFailure() => Icons.timer_off_outlined,
+      UnauthorizedFailure() => Icons.lock_outline_rounded,
+      SecurityFailure() => Icons.security_rounded,
+      _ => Icons.error_outline_rounded,
+    };
+
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 5),
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: const BorderSide(color: AppColors.error, width: 1),
           ),
           content: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.error_outline, color: AppColors.error, size: 20),
+              Icon(icon, color: AppColors.error, size: 20),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(message,

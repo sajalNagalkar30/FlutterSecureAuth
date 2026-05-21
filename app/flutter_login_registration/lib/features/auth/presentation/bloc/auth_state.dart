@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/error/failures.dart';
 import '../../domain/entities/user_entity.dart';
 
 abstract class AuthState extends Equatable {
@@ -33,12 +34,13 @@ class AuthUnauthenticated extends AuthState {
   const AuthUnauthenticated();
 }
 
-/// A recoverable error (shown as a snackbar / banner in UI).
+/// A recoverable error (shown as a snackbar in UI).
 class AuthError extends AuthState {
   final String message;
+  final AppFailure? failure;
 
-  const AuthError(this.message);
+  const AuthError(this.message, {this.failure});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, failure];
 }

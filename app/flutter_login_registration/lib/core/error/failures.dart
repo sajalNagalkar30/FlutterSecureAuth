@@ -14,17 +14,29 @@ class ValidationFailure extends AppFailure {
 
 /// No internet connection detected.
 class NetworkFailure extends AppFailure {
-  const NetworkFailure([super.message = 'No internet connection. Please check your network.']);
+  const NetworkFailure(
+      [super.message =
+          'No internet connection.\nPlease check your Wi-Fi or mobile data.']);
+}
+
+/// Server is unreachable (offline / cold start / wrong URL).
+class ServerUnreachableFailure extends AppFailure {
+  const ServerUnreachableFailure(
+      [super.message =
+          'Unable to reach the server.\nIt may be starting up — please try again in a moment.']);
 }
 
 /// Request timed out.
 class TimeoutFailure extends AppFailure {
-  const TimeoutFailure([super.message = 'Request timed out. Please try again.']);
+  const TimeoutFailure(
+      [super.message =
+          'The server took too long to respond.\nPlease try again.']);
 }
 
 /// 401 – token invalid / expired.
 class UnauthorizedFailure extends AppFailure {
-  const UnauthorizedFailure([super.message = 'Session expired. Please login again.']);
+  const UnauthorizedFailure(
+      [super.message = 'Session expired. Please login again.']);
 }
 
 /// 400 – bad request / server-side validation.
@@ -49,10 +61,11 @@ class ServerFailure extends AppFailure {
 
 /// SSL certificate verification failed (pinning mismatch).
 class SecurityFailure extends AppFailure {
-  const SecurityFailure([super.message = 'Security error: SSL certificate mismatch.']);
+  const SecurityFailure(
+      [super.message = 'Security error: SSL certificate mismatch.']);
 }
 
 /// Catch-all for unexpected errors.
 class UnknownFailure extends AppFailure {
-  const UnknownFailure([super.message = 'An unexpected error occurred.']);
+  const UnknownFailure([super.message = 'Something went wrong. Please try again.']);
 }

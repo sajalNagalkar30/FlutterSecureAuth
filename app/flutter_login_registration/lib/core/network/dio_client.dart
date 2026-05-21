@@ -37,20 +37,23 @@ class DioClient {
       ),
     );
 
-    // ── SSL (non-web only) ─────────────────────────────────────────────────
+    // ── SSL Pinning (non-web only) ─────────────────────────────────────────
     if (!kIsWeb && ApiConstants.useHttps) {
       (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
         final client = HttpClient();
         client.badCertificateCallback =
             (X509Certificate cert, String host, int port) {
-          // If no fingerprint set, trust all certs (dev / self-signed)
+          // Disable pinning in dev when no fingerprint is set
           if (ApiConstants.sslPinnedFingerprint.isEmpty) return true;
-          final fingerprint = _sha256Fingerprint(cert.der);
-          final trusted = fingerprint == ApiConstants.sslPinnedFingerprint;
+
+          // Pin against the public key (SPKI SHA-256) — survives cert renewal
+          final spkiFingerprint = _spkiFingerprint(cert.der);
+          final trusted = spkiFingerprint == ApiConstants.sslPinnedFingerprint;
+
           if (!trusted && kDebugMode) {
-            debugPrint('[SSL] ⚠️  Certificate fingerprint mismatch!');
+            debugPrint('[SSL] ⚠️  Public key fingerprint mismatch!');
             debugPrint('[SSL]   expected : ${ApiConstants.sslPinnedFingerprint}');
-            debugPrint('[SSL]   received : $fingerprint');
+            debugPrint('[SSL]   received : $spkiFingerprint');
           }
           return trusted;
         };
@@ -75,12 +78,73 @@ class DioClient {
     return dio;
   }
 
-  /// Returns a base64-encoded SHA-256 hash of [derBytes].
-  static String _sha256Fingerprint(Uint8List derBytes) {
-    // SHA-256 computed manually using dart:convert (no extra package needed)
-    // Using the same format as Node's `crypto.createHash('sha256').update(der).digest('base64')`
-    final digest = _sha256(derBytes);
+  /// Extracts the SubjectPublicKeyInfo (SPKI) from a DER cert and returns
+  /// its SHA-256 as base64 — matches `openssl x509 -pubkey | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | base64`
+  static String _spkiFingerprint(Uint8List der) {
+    final spki = _extractSpki(der);
+    final digest = _sha256(spki ?? der);
     return base64.encode(digest);
+  }
+
+  /// Parses the DER-encoded certificate and extracts the raw SPKI bytes.
+  /// Returns null if parsing fails (falls back to full DER hash).
+  static Uint8List? _extractSpki(Uint8List der) {
+    try {
+      // DER structure: SEQUENCE { SEQUENCE { ... tbsCertificate ... } ... }
+      // tbsCertificate SEQUENCE contains subjectPublicKeyInfo at a known offset
+      // Walk the ASN.1 to find the SPKI field
+      int i = 0;
+
+      // Outer SEQUENCE (certificate)
+      if (der[i++] != 0x30) return null;
+      i += _skipLength(der, i);
+
+      // tbsCertificate SEQUENCE
+      if (der[i++] != 0x30) return null;
+      final tbsLenBytes = _readLength(der, i);
+      final tbsStart = i + tbsLenBytes.$2;
+      final tbsEnd = tbsStart + tbsLenBytes.$1;
+      i = tbsStart;
+
+      // Skip version [0] EXPLICIT if present
+      if (der[i] == 0xa0) { i++; i += _skipLength(der, i); }
+      // Skip serialNumber INTEGER
+      if (der[i] == 0x02) { i++; i += _skipLength(der, i); }
+      // Skip signature AlgorithmIdentifier SEQUENCE
+      if (der[i] == 0x30) { i++; i += _skipLength(der, i); }
+      // Skip issuer Name SEQUENCE
+      if (der[i] == 0x30) { i++; i += _skipLength(der, i); }
+      // Skip validity SEQUENCE
+      if (der[i] == 0x30) { i++; i += _skipLength(der, i); }
+      // Skip subject Name SEQUENCE
+      if (der[i] == 0x30) { i++; i += _skipLength(der, i); }
+
+      if (i >= tbsEnd) return null;
+
+      // Next field is subjectPublicKeyInfo SEQUENCE
+      if (der[i] != 0x30) return null;
+      final spkiStart = i;
+      i++;
+      final spkiLen = _readLength(der, i);
+      final spkiEnd = i + spkiLen.$2 + spkiLen.$1;
+
+      return Uint8List.fromList(der.sublist(spkiStart, spkiEnd));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static int _skipLength(Uint8List der, int i) {
+    final r = _readLength(der, i);
+    return r.$2 + r.$1;
+  }
+
+  static (int, int) _readLength(Uint8List der, int i) {
+    if (der[i] & 0x80 == 0) return (der[i], 1);
+    final numBytes = der[i] & 0x7f;
+    int len = 0;
+    for (int j = 1; j <= numBytes; j++) { len = (len << 8) | der[i + j]; }
+    return (len, 1 + numBytes);
   }
 
   // Minimal pure-Dart SHA-256 to avoid adding the `crypto` package.

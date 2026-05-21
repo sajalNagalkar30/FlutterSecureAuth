@@ -16,14 +16,14 @@ class ApiConstants {
     defaultValue: 'https://fluttersecureauth.onrender.com/api/auth',
   );
 
-  // SSL Pinning — empty string disables pinning (dev with self-signed cert)
-  static const String sslPinnedFingerprint = '';
+  // SSL Pinning — SHA-256 of public key (SPKI) from fluttersecureauth.onrender.com
+  static const String sslPinnedFingerprint = 'T4eoRdbfIYF3G9IOGamqR3Vgye2bNLHQTSCOY8u3y5w=';
 
   // HTTPS is active
   static const bool useHttps = true;
 
-  // Dio timeouts (ms)
-  static const int connectTimeout = 15000;
-  static const int receiveTimeout = 15000;
-  static const int sendTimeout = 15000;
+  // Dio timeouts (ms) — increased for Render free tier cold start (~30-60s)
+  static const int connectTimeout = 90000;
+  static const int receiveTimeout = 90000;
+  static const int sendTimeout = 90000;
 }
