@@ -5,7 +5,12 @@ class NetworkInfo {
 
   /// Returns true when at least one active connection is available.
   static Future<bool> get isConnected async {
-    final result = await Connectivity().checkConnectivity();
-    return result != ConnectivityResult.none;
+    try {
+      final result = await Connectivity().checkConnectivity();
+      return result != ConnectivityResult.none;
+    } catch (_) {
+      // If check fails, let Dio handle the error instead
+      return true;
+    }
   }
 }
