@@ -88,7 +88,27 @@ jobs:
       - name: Build Flutter APK (Android)
         working-directory: app/flutter_login_registration
         run: flutter build apk --release --no-pub
-        continue-on-error: true   # needs signing key for real release
+
+      # ── Upload APK so it can be downloaded from GitHub Actions ──────────
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlutterSecureAuth-APK
+          path: app/flutter_login_registration/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30   # artifact stays available for 30 days
+
+      # ── Build iOS IPA (macOS runner required) ────────────────────────────
+      # Uncomment when you want iOS builds (uses paid minutes)
+      # - name: Build iOS IPA
+      #   working-directory: app/flutter_login_registration
+      #   run: flutter build ipa --release --no-pub --no-codesign
+
+      # - name: Upload IPA artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: FlutterSecureAuth-IPA
+      #     path: app/flutter_login_registration/build/ios/ipa/*.ipa
+      #     retention-days: 30
 
   # ─────────────────────────────────────────────────────────────────────────
   # JOB 3: Deploy backend (runs only on push to main)
