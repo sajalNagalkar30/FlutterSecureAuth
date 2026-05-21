@@ -6,6 +6,7 @@ import '../../../../core/error/failures.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../../../../../core/navigation/fade_route.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
 
@@ -69,10 +70,7 @@ class _LoginViewState extends State<_LoginView>
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => HomeScreen(user: state.user)),
-          );
+          Navigator.pushReplacement(context, FadeRoute(page: HomeScreen(user: state.user)));
         } else if (state is AuthError) {
           _showErrorSnackBar(context, state.message, state.failure);
         }
@@ -81,27 +79,76 @@ class _LoginViewState extends State<_LoginView>
         body: Container(
           decoration: const BoxDecoration(gradient: AppColors.bgGradient),
           child: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 860;
+                return isWide
+                    ? _buildWideLayout(context)
+                    : _buildNarrowLayout(context);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Wide (web/desktop) layout ─────────────────────────────────────────────
+
+  Widget _buildWideLayout(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: _BrandPanel()),
+        Expanded(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
                 child: FadeTransition(
                   opacity: _fade,
                   child: SlideTransition(
                     position: _slide,
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 48),
                         _buildHero(),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 36),
                         _buildForm(context),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 24),
                         _buildRegisterLink(context),
-                        const SizedBox(height: 48),
                       ],
                     ),
                   ),
                 ),
               ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Narrow (mobile) layout ────────────────────────────────────────────────
+
+  Widget _buildNarrowLayout(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: FadeTransition(
+          opacity: _fade,
+          child: SlideTransition(
+            position: _slide,
+            child: Column(
+              children: [
+                const SizedBox(height: 48),
+                _buildHero(),
+                const SizedBox(height: 40),
+                _buildForm(context),
+                const SizedBox(height: 28),
+                _buildRegisterLink(context),
+                const SizedBox(height: 48),
+              ],
             ),
           ),
         ),
@@ -209,7 +256,7 @@ class _LoginViewState extends State<_LoginView>
         GestureDetector(
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const RegisterScreen()),
+            FadeRoute(page: const RegisterScreen()),
           ),
           child: const Text(
             'Sign Up',
@@ -260,6 +307,100 @@ class _LoginViewState extends State<_LoginView>
           ),
         ),
       );
+  }
+}
+
+// ── Brand panel (left side on web) ────────────────────────────────────────
+
+class _BrandPanel extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 60),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(40),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(Icons.security_rounded,
+                  color: Colors.white, size: 28),
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              'Secure Auth\nDemo',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                height: 1.2,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'A production-ready Flutter authentication\nexample with enterprise-grade security.',
+              style: TextStyle(
+                color: Colors.white.withAlpha(200),
+                fontSize: 15,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 48),
+            ..._features.map((f) => _FeatureBullet(icon: f.$1, label: f.$2)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static const _features = [
+    (Icons.https_rounded, 'SSL Certificate Pinning'),
+    (Icons.refresh_rounded, 'Automatic Token Refresh'),
+    (Icons.storage_rounded, 'Encrypted Secure Storage'),
+    (Icons.shield_rounded, 'Root / Jailbreak Detection'),
+  ];
+}
+
+class _FeatureBullet extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _FeatureBullet({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(40),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.white, size: 16),
+          ),
+          const SizedBox(width: 14),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

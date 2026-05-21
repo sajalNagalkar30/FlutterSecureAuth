@@ -5,6 +5,7 @@ import '../../../../core/di/injection.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../../../../../core/navigation/fade_route.dart';
 import 'home_screen.dart';
 
 class RegisterScreen extends StatelessWidget {
@@ -76,7 +77,7 @@ class _RegisterViewState extends State<_RegisterView>
         if (state is AuthAuthenticated) {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => HomeScreen(user: state.user)),
+            FadeRoute(page: HomeScreen(user: state.user)),
             (_) => false,
           );
         } else if (state is AuthError) {
@@ -87,27 +88,76 @@ class _RegisterViewState extends State<_RegisterView>
         body: Container(
           decoration: const BoxDecoration(gradient: AppColors.bgGradient),
           child: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 860;
+                return isWide
+                    ? _buildWideLayout(context)
+                    : _buildNarrowLayout(context);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Wide (web/desktop) layout ─────────────────────────────────────────────
+
+  Widget _buildWideLayout(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: _BrandPanel()),
+        Expanded(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
                 child: FadeTransition(
                   opacity: _fade,
                   child: SlideTransition(
                     position: _slide,
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 36),
                         _buildHero(),
                         const SizedBox(height: 32),
                         _buildForm(context),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 24),
                         _buildLoginLink(context),
-                        const SizedBox(height: 36),
                       ],
                     ),
                   ),
                 ),
               ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Narrow (mobile) layout ────────────────────────────────────────────────
+
+  Widget _buildNarrowLayout(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: FadeTransition(
+          opacity: _fade,
+          child: SlideTransition(
+            position: _slide,
+            child: Column(
+              children: [
+                const SizedBox(height: 36),
+                _buildHero(),
+                const SizedBox(height: 32),
+                _buildForm(context),
+                const SizedBox(height: 28),
+                _buildLoginLink(context),
+                const SizedBox(height: 36),
+              ],
             ),
           ),
         ),
@@ -281,6 +331,100 @@ class _RegisterViewState extends State<_RegisterView>
           ),
         ),
       );
+  }
+}
+
+// ── Brand panel (left side on web) ────────────────────────────────────────
+
+class _BrandPanel extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 60),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(40),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(Icons.security_rounded,
+                  color: Colors.white, size: 28),
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              'Join Us\nToday',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                height: 1.2,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Create your account and get access\nto all features in seconds.',
+              style: TextStyle(
+                color: Colors.white.withAlpha(200),
+                fontSize: 15,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 48),
+            ..._features.map((f) => _FeatureBullet(icon: f.$1, label: f.$2)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static const _features = [
+    (Icons.verified_user_rounded, 'Secure JWT Authentication'),
+    (Icons.flash_on_rounded, 'Instant Account Setup'),
+    (Icons.devices_rounded, 'Cross-platform Support'),
+    (Icons.lock_rounded, 'Privacy First Design'),
+  ];
+}
+
+class _FeatureBullet extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _FeatureBullet({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(40),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.white, size: 16),
+          ),
+          const SizedBox(width: 14),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
