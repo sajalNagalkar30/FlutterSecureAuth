@@ -5,9 +5,14 @@ class ApiConstants {
   // Android emulator: https://10.0.2.2:9000/api/auth
   // iOS Simulator:    https://localhost:9000/api/auth
   // Physical device:  https://<your-mac-lan-ip>:9000/api/auth
-  static const String baseUrl = String.fromEnvironment(
+  // static const String baseUrl = String.fromEnvironment(
+  //   'BASE_URL',
+  //   defaultValue: 'https://10.45.44.173:9000/api/auth',
+  // );
+
+    static const String baseUrl = String.fromEnvironment(
     'BASE_URL',
-    defaultValue: 'https://10.45.44.173:9000/api/auth',
+    defaultValue: 'https://fluttersecureauth.onrender.com',
   );
 
   // SSL Pinning — empty string disables pinning (dev with self-signed cert)
