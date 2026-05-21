@@ -60,6 +60,16 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/app/flutter_login_registration",
             "args": ["--dart-define=BASE_URL=https://10.45.44.173:9000/api/auth"]
+        },
+
+        // ─── Flutter – Web Chrome (Render backend) ───────────────────────────
+        {
+            "name": "Flutter (Web - Chrome)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/app/flutter_login_registration",
+            "deviceId": "chrome",
+            "args": ["--dart-define=BASE_URL=https://fluttersecureauth.onrender.com/api/auth"]
         }
     ],
 
