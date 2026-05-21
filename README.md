@@ -2,6 +2,14 @@
 
 A full-stack authentication project built with **Flutter** (frontend) and **Node.js + Express** (backend), implementing production-grade security including JWT with refresh tokens, SSL certificate pinning, encrypted storage, and clean architecture.
 
+Runs on **Web**, **Android**, and **iOS** — with a live demo deployed to GitHub Pages.
+
+---
+
+## Live Demo
+
+**Web:** [https://sajalnagalkar30.github.io/FlutterSecureAuth/](https://sajalnagalkar30.github.io/FlutterSecureAuth/)
+
 ---
 
 ## Screenshots
@@ -14,18 +22,21 @@ A full-stack authentication project built with **Flutter** (frontend) and **Node
 
 | | Technology |
 |---|---|
-| **Mobile App** | Flutter (Dart) |
+| **App (Web / Android / iOS)** | Flutter (Dart) |
 | **State Management** | flutter_bloc (BLoC pattern) |
 | **Architecture** | Clean Architecture (Domain / Data / Presentation) |
 | **HTTP Client** | Dio |
 | **Dependency Injection** | get_it |
-| **Token Storage** | flutter_secure_storage |
+| **Token Storage** | flutter_secure_storage (mobile) / in-memory (web) |
 | **Connectivity** | connectivity_plus |
+| **Splash Screen** | flutter_native_splash |
+| **App Icon** | flutter_launcher_icons (Android, iOS, Web) |
 | **Backend** | Node.js + Express.js |
 | **Database** | MongoDB (Mongoose ODM) |
 | **Authentication** | JWT Access Token + Refresh Token |
 | **Security** | SSL Pinning, Helmet, CORS, HTTPS |
 | **CI/CD** | GitHub Actions |
+| **Web Hosting** | GitHub Pages |
 
 ---
 
@@ -35,7 +46,7 @@ A full-stack authentication project built with **Flutter** (frontend) and **Node
 FlutterSecureAuth/
 │
 ├── 📁 app/
-│   └── 📁 flutter_login_registration/         # Flutter mobile app
+│   └── 📁 flutter_login_registration/         # Flutter app (Web / Android / iOS)
 │       │
 │       ├── 📁 lib/
 │       │   ├── main.dart                       # Entry point — initializes DI and runs app
@@ -96,7 +107,7 @@ FlutterSecureAuth/
 │       ├── pubspec.yaml                        # Flutter dependencies
 │       ├── 📁 android/                         # Android platform config
 │       ├── 📁 ios/                             # iOS platform config
-│       └── 📁 macos/                           # macOS platform config
+│       └── 📁 web/                             # Web platform config (manifest, index.html)
 │
 ├── 📁 backend/                                 # Node.js REST API
 │   ├── server.js                               # Express entry — HTTP/HTTPS, middleware, routes
@@ -116,7 +127,8 @@ FlutterSecureAuth/
 │
 ├── 📁 .github/
 │   └── 📁 workflows/
-│       └── ci.yml                              # GitHub Actions CI/CD pipeline
+│       ├── ci.yml                              # GitHub Actions CI/CD pipeline
+│       └── deploy-web.yml                      # GitHub Pages deployment for Flutter web
 │
 ├── .env.example                                # Environment variable template
 ├── .gitignore                                  # Excludes .env, certs, node_modules, build
@@ -245,16 +257,19 @@ cd app/flutter_login_registration
 # Install dependencies
 flutter pub get
 
-# Run the app
-flutter run
+# Run on a specific platform
+flutter run -d chrome          # Web
+flutter run -d emulator-5554   # Android emulator
+flutter run -d iPhone          # iOS simulator
 ```
 
 > **Device URL config** is handled via `--dart-define=BASE_URL=...` in `.vscode/launch.json`
 
-| Device | BASE_URL |
+| Platform | BASE_URL |
 |---|---|
 | Android Emulator | `https://10.0.2.2:9000/api/auth` |
 | iOS Simulator | `https://localhost:9000/api/auth` |
+| Web (browser) | `https://localhost:9000/api/auth` |
 | Physical Device | `https://<your-mac-lan-ip>:9000/api/auth` |
 
 ---
@@ -265,6 +280,7 @@ Open `demo-app.code-workspace` then go to **Run & Debug** (`Cmd+Shift+D`) and pi
 
 | Compound | Description |
 |---|---|
+| ▶ Backend + Web (Chrome) | Starts both for the browser |
 | ▶ Backend + iOS Physical Device | Starts both together for iPhone |
 | ▶ Backend + iOS Simulator | Starts both for iOS Simulator |
 | ▶ Backend + Android Emulator | Starts both for Android Emulator |
@@ -274,22 +290,43 @@ Open `demo-app.code-workspace` then go to **Run & Debug** (`Cmd+Shift+D`) and pi
 
 ## CI/CD Pipeline
 
-GitHub Actions (`.github/workflows/ci.yml`) triggers on every push to `main`:
+### Continuous Integration (`ci.yml`)
+
+GitHub Actions triggers on every push to `main` or `develop`:
 
 ```
-Push to main
+Push to main / develop
     │
     ├── Backend CI
     │     ├── Restore .env from GitHub Secrets
     │     ├── Restore SSL certs from GitHub Secrets
-    │     ├── npm install
+    │     ├── npm install + npm audit
     │     └── Server smoke test
     │
-    └── Flutter CI
-          ├── flutter pub get
-          ├── flutter analyze
-          ├── flutter test
-          └── flutter build apk
+    ├── Flutter Analyze & Test
+    │     ├── flutter pub get
+    │     ├── flutter analyze
+    │     └── flutter test
+    │
+    ├── Build Android APK (obfuscated)
+    │     └── Uploads APK + debug symbols as artifacts
+    │
+    └── Build iOS IPA (obfuscated, no code sign)
+          └── Uploads IPA + debug symbols as artifacts
+```
+
+### Web Deployment (`deploy-web.yml`)
+
+Automatically deploys the Flutter web build to **GitHub Pages** on every push to `main` that touches the app directory:
+
+```
+Push to main (app/** changed)
+    │
+    ├── flutter build web --release
+    │     └── --base-href /FlutterSecureAuth/
+    │
+    └── Deploy to GitHub Pages
+          └── https://sajalnagalkar30.github.io/FlutterSecureAuth/
 ```
 
 ### Required GitHub Secrets
@@ -303,6 +340,7 @@ Go to `Settings → Secrets and variables → Actions` and add:
 | `JWT_REFRESH_SECRET` | Refresh token signing secret |
 | `SSL_CERT` | Contents of `backend/certs/server.crt` |
 | `SSL_KEY` | Contents of `backend/certs/server.key` |
+| `SERVER_URL` | Backend base URL injected into Flutter builds |
 
 ---
 
@@ -316,6 +354,8 @@ Go to `Settings → Secrets and variables → Actions` and add:
 | `flutter_secure_storage` | ^9.2.2 | Encrypted token storage |
 | `connectivity_plus` | ^5.0.2 | Internet connectivity detection |
 | `get_it` | ^8.0.2 | Dependency injection |
+| `flutter_native_splash` | ^2.4.7 | Native splash screen (Android & iOS) |
+| `flutter_launcher_icons` | ^0.14.4 | App icons for Android, iOS, and Web |
 
 ## Backend Dependencies
 
