@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'core/constants/app_theme.dart';
 import 'core/di/injection.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -36,6 +37,7 @@ class _AuthGate extends StatelessWidget {
         if (state is AuthInitial || state is AuthLoading) {
           return const _SplashScreen();
         }
+        FlutterNativeSplash.remove();
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 400),
           switchInCurve: Curves.easeOut,

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'app.dart';
 import 'core/di/injection.dart';
 import 'core/security/device_security.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   // ── Reverse Engineering Protection ───────────────────────────────────────
   // Disable screenshots and screen recording on Android

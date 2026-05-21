@@ -27,6 +27,9 @@ dependencies:
   # Dependency injection
   get_it: ^8.0.2
 
+  # Native splash screen
+  flutter_native_splash: ^2.4.7
+
   # No third-party package needed — jailbreak/root detection
   # is implemented natively in core/security/device_security.dart using dart:io
 
@@ -38,6 +41,22 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
+
+flutter_native_splash:
+  color: "#1a1a2e"
+  color_dark: "#1a1a2e"
+  image: assets/icons/app_icon.png
+  image_dark: assets/icons/app_icon.png
+  icon_background_color: "#1a1a2e"
+  icon_background_color_dark: "#1a1a2e"
+  android_12:
+    image: assets/icons/app_icon.png
+    icon_background_color: "#1a1a2e"
+    image_dark: assets/icons/app_icon.png
+    icon_background_color_dark: "#1a1a2e"
+    color: "#1a1a2e"
+    color_dark: "#1a1a2e"
+  web: false
 
 flutter_launcher_icons:
   android: true
