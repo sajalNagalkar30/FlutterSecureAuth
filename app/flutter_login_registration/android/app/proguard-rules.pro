@@ -3,19 +3,22 @@
 -keep class io.flutter.plugins.** { *; }
 -dontwarn io.flutter.embedding.**
 
-# ── Dart / Flutter engine ─────────────────────────────────────────────────────
--keep class com.google.** { *; }
+# ── Fix R8 missing class errors ───────────────────────────────────────────────
+-dontwarn javax.lang.model.element.Modifier
+-dontwarn javax.lang.model.**
+-dontwarn com.google.errorprone.annotations.**
+-dontwarn com.google.j2objc.annotations.**
+-dontwarn org.checkerframework.**
+-dontwarn afu.org.checkerframework.**
+-dontwarn sun.misc.Unsafe
 
 # ── flutter_secure_storage ────────────────────────────────────────────────────
 -keep class com.it_nomads.fluttersecurestorage.** { *; }
 
-# ── Jailbreak detection ───────────────────────────────────────────────────────
--keep class com.alexoladele.** { *; }
-
 # ── Connectivity Plus ─────────────────────────────────────────────────────────
 -keep class dev.fluttercommunity.plus.connectivity.** { *; }
 
-# ── OkHttp / Dio (networking) ────────────────────────────────────────────────
+# ── OkHttp / Dio (networking) ─────────────────────────────────────────────────
 -dontwarn okhttp3.**
 -dontwarn okio.**
 -keep class okhttp3.** { *; }
@@ -30,8 +33,13 @@
     public static int e(...);
 }
 
-# ── General: keep model class names for JSON parsing ─────────────────────────
+# ── Keep annotations and signatures ──────────────────────────────────────────
 -keepattributes Signature
 -keepattributes *Annotation*
 -keepattributes EnclosingMethod
 -keepattributes InnerClasses
+
+# ── Kotlin ────────────────────────────────────────────────────────────────────
+-keep class kotlin.** { *; }
+-keep class kotlinx.** { *; }
+-dontwarn kotlin.**
